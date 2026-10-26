@@ -12,7 +12,7 @@
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
     "serve": "node scripts/serve.mjs",
     "images": "node scripts/images.mjs",
-    "measure-form": "node scripts/measure-form.mjs",
+    "form-fields": "node scripts/form-fields.mjs",
     "test": "playwright test",
     "screenshots": "node scripts/build.mjs && node scripts/screenshots.mjs"
   },

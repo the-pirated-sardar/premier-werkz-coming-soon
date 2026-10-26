@@ -1,11 +1,9 @@
 /* ==========================================================================
    Premier Werkz — Coming Soon
    Mobile-first. Breakpoints:
-     ≤1023px              single column (hero → form → contact)
+     ≤1023px              single column: hero → form → contact
      landscape phones     hero photo and copy side by side
-     ≥1024px              split: photo panel left, form column right
-     ≥1280px & ≥640px h   photo panel stays put while the form column scrolls;
-                          contact details move to the top of the photo panel
+     ≥1024px              split: photo panel left (holds still), form + contact right
    ========================================================================== */
 
 @font-face {
@@ -19,19 +17,21 @@
 :root {
   --bg: #0a0b0e;
   --surface: #111318;
+  --field: #0b0c10;
   --line: rgb(255 255 255 / 0.12);
+  --line-strong: rgb(255 255 255 / 0.2);
   --text: #f4f2ee;
   --muted: #b9bcc5;
   --subtle: #9497a2;
   --gold: #f2b530;
   --gold-deep: #e09a1c;
-  --form-paper: #f0f0f1;
+  --danger: #ff8a7a;
 
   --font: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --gutter: clamp(1rem, 4vw, 2rem);
-  --pad: clamp(1.5rem, 2.6vw, 3rem);
-  --form-col: clamp(520px, 42vw, 720px);
-  --radius: 14px;
+  --pad: clamp(1.25rem, min(2.6vw, 3.6vh), 3rem);
+  --form-col: clamp(500px, 40vw, 680px);
+  --radius: 10px;
 
   color-scheme: dark;
 }
@@ -62,14 +62,14 @@ body {
 }
 
 img,
-svg,
-iframe {
+svg {
   display: block;
   max-width: 100%;
 }
 
 h1,
 h2,
+h3,
 p,
 ul {
   margin: 0;
@@ -92,6 +92,10 @@ a:hover {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .visually-hidden {
@@ -129,6 +133,53 @@ a:hover {
   width: 1.15rem;
   height: 1.15rem;
   flex: none;
+}
+
+.icon--inline {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  flex: 1 1 13rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3.25rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.975rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.button--primary {
+  background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+  color: #15120b;
+}
+
+.button--primary:hover {
+  color: #15120b;
+  background: linear-gradient(180deg, #f8c64a, var(--gold));
+}
+
+.button--ghost {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.28);
+  color: var(--text);
+}
+
+.button--ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 /* ---------- Hero ---------- */
@@ -186,22 +237,24 @@ a:hover {
   max-width: 40rem;
 }
 
-.eyebrow {
+/* Location line sits under the headline, on the darkest part of the photo. */
+.hero__locality {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.9rem;
+  gap: 0.8rem;
+  margin-top: 1rem;
   color: var(--gold);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 650;
   font-stretch: 112%;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.6);
 }
 
-.eyebrow::before {
+.hero__locality::before {
   content: '';
-  width: 2rem;
+  width: 2.25rem;
   height: 2px;
   background: linear-gradient(90deg, var(--gold), var(--gold-deep));
 }
@@ -230,7 +283,7 @@ a:hover {
 }
 
 .hero__intro {
-  margin-top: 1.1rem;
+  margin-top: 1rem;
   max-width: 34rem;
   color: var(--muted);
   font-size: 1.0625rem;
@@ -275,58 +328,26 @@ a:hover {
   margin-top: 1.75rem;
 }
 
-.button {
-  flex: 1 1 13rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  min-height: 3.25rem;
-  padding: 0.8rem 1.35rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 0.975rem;
-  font-weight: 600;
-  text-decoration: none;
-  line-height: 1.2;
-}
-
-.button--primary {
-  background: linear-gradient(180deg, var(--gold), var(--gold-deep));
-  color: #15120b;
-}
-
-.button--primary:hover {
-  color: #15120b;
-  background: linear-gradient(180deg, #f8c64a, var(--gold));
-}
-
-.button--ghost {
-  border-color: rgb(255 255 255 / 0.28);
-  color: var(--text);
-}
-
-.button--ghost:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
-/* ---------- Get in touch (form) ---------- */
+/* ---------- Get in touch ---------- */
 
 .enquiry {
-  padding: 3rem max(var(--gutter), env(safe-area-inset-right)) 3rem max(var(--gutter), env(safe-area-inset-left));
+  padding: 3rem max(var(--gutter), env(safe-area-inset-right)) 2.5rem max(var(--gutter), env(safe-area-inset-left));
   background: var(--surface);
   border-top: 1px solid var(--line);
-  scroll-margin-top: 0;
 }
 
 .enquiry:focus {
   outline: none;
 }
 
+.enquiry > *,
+.contact > * {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
 .enquiry__head {
-  max-width: 40rem;
-  margin: 0 auto 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .section-title {
@@ -334,82 +355,232 @@ a:hover {
   font-weight: 700;
   font-stretch: 118%;
   line-height: 1.15;
-  letter-spacing: 0;
 }
 
 .enquiry__intro {
   margin-top: 0.5rem;
   color: var(--muted);
+  text-wrap: pretty;
 }
 
-.form-frame {
-  position: relative;
-  max-width: 40rem;
-  margin: 0 auto;
-  container-type: inline-size;
-  background: var(--form-paper);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 60px -24px rgb(0 0 0 / 0.7);
+/* ---------- Form ---------- */
+
+.gform__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 0.875rem;
 }
 
-.form-frame__loading {
-  position: absolute;
-  inset: 3rem 0 auto;
-  text-align: center;
-  color: #5d6068;
-  font-size: 0.95rem;
+.field {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
 }
 
-.form-frame__iframe {
-  position: relative;
-  width: 100%;
-  height: var(--form-h-narrow);
-  border: 0;
-}
-
-@container (min-width: 600px) {
-  .form-frame__iframe {
-    height: var(--form-h-wide);
+@media (min-width: 480px) {
+  .field--half {
+    grid-column: span 1;
   }
 }
 
-.form-fallback {
+.field__label {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem 0.4rem;
-  max-width: 40rem;
-  margin: 1rem auto 0;
-  color: var(--subtle);
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.form-fallback a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 2.75rem;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text);
 }
 
-.icon--inline {
-  width: 0.95rem;
-  height: 0.95rem;
+.field__optional {
+  color: var(--subtle);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field__input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 0.95rem;
+  background: var(--field);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem; /* ≥16px stops iOS zooming into the field */
+  line-height: 1.4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.field__input::placeholder {
+  color: #6f7380;
+  opacity: 1;
+}
+
+.field__input:hover {
+  border-color: rgb(255 255 255 / 0.32);
+}
+
+.field__input:focus,
+.field__input:focus-visible {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgb(242 181 48 / 0.22);
+  border-radius: var(--radius);
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.field__input[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px rgb(255 138 122 / 0.22);
+}
+
+textarea.field__input {
+  min-height: 7.25rem;
+  resize: vertical;
+}
+
+/* Autofill: keep the dark field instead of the browser's yellow/blue. */
+.field__input:-webkit-autofill,
+.field__input:-webkit-autofill:hover,
+.field__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 100px #16181f inset;
+  caret-color: var(--text);
+}
+
+.field__error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.gform__trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.gform__error {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(255 138 122 / 0.4);
+  border-radius: var(--radius);
+  background: rgb(255 138 122 / 0.08);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.gform__error .icon {
+  margin-top: 0.1rem;
+  color: var(--danger);
+}
+
+.gform__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.gform__submit {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 480px) {
+  .gform__submit {
+    flex: 0 1 auto;
+    min-width: 12rem;
+  }
+}
+
+.gform__submit .icon {
+  transition: transform 0.2s ease;
+}
+
+.gform__submit:hover .icon {
+  transform: translateX(3px);
+}
+
+.gform__submit:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.gform__submit.is-busy .icon {
+  animation: nudge 0.9s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+.gform__alt {
+  color: var(--subtle);
+  font-size: 0.85rem;
+}
+
+.gform__alt a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.75rem;
+  color: var(--muted);
+}
+
+.gform-success {
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
+  padding: 1.75rem;
+  border: 1px solid rgb(242 181 48 / 0.35);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgb(242 181 48 / 0.08), rgb(242 181 48 / 0.02));
+}
+
+.gform-success:focus {
+  outline: none;
+}
+
+.gform-success__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--gold);
+}
+
+.gform-success__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-stretch: 112%;
+}
+
+.gform-success p {
+  color: var(--muted);
+}
+
+.gform-success .button {
+  flex: none;
+  margin-top: 0.75rem;
 }
 
 /* ---------- Contact ---------- */
 
 .contact {
-  padding: 3rem max(var(--gutter), env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  padding: 2.5rem max(var(--gutter), env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
   border-top: 1px solid var(--line);
-}
-
-.contact > * {
-  max-width: 40rem;
-  margin-inline: auto;
 }
 
 .contact__title {
@@ -428,14 +599,13 @@ a:hover {
 
 .contact__list {
   display: grid;
-  gap: 0;
   padding: 0;
   list-style: none;
 }
 
 .contact__item {
   display: grid;
-  grid-template-columns: 1.15rem 3.9rem 1fr;
+  grid-template-columns: 1.15rem 1fr;
   align-items: start;
   column-gap: 0.85rem;
   padding: 0.9rem 0;
@@ -449,15 +619,6 @@ a:hover {
 .contact__item .icon {
   margin-top: 0.2rem;
   color: var(--gold);
-}
-
-.contact__label {
-  padding-top: 0.15rem;
-  color: var(--subtle);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .contact__value {
@@ -480,21 +641,25 @@ a:hover {
 }
 
 .contact__note {
-  grid-column: 3;
+  grid-column: 2;
   margin-top: 0.15rem;
   color: var(--muted);
   font-size: 0.875rem;
 }
 
-.contact__item--social .contact__label {
-  grid-column: 2;
+.contact__addr-sep {
+  display: none;
+}
+
+.contact__item--social {
+  grid-template-columns: 1fr;
+  border-bottom: 0;
 }
 
 .contact__socials {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-block: -0.45rem;
 }
 
 .contact__social {
@@ -502,8 +667,8 @@ a:hover {
   align-items: center;
   gap: 0.45rem;
   min-height: 2.75rem;
-  padding: 0 0.85rem 0 0.7rem;
-  border: 1px solid var(--line);
+  padding: 0 0.95rem 0 0.75rem;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -514,13 +679,8 @@ a:hover {
   border-color: var(--gold);
 }
 
-.contact__social .icon {
-  margin: 0;
-  color: currentColor;
-}
-
 .contact__legal {
-  margin-top: 2rem;
+  margin-top: 1.25rem;
   color: var(--subtle);
   font-size: 0.8125rem;
 }
@@ -584,16 +744,24 @@ a:hover {
 /* ---------- Desktop: split layout ---------- */
 
 @media (min-width: 1024px) {
+  /* Right column: surface colour plus a hairline divider, painted on the grid itself
+     so it runs the full height however the content is distributed. */
   .page {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--form-col);
-    grid-template-rows: auto auto;
+    grid-template-rows: 1fr auto auto 1fr;
     min-height: 100svh;
+    background: linear-gradient(
+      to left,
+      var(--surface) 0 var(--form-col),
+      var(--line) var(--form-col) calc(var(--form-col) + 1px),
+      transparent calc(var(--form-col) + 1px)
+    );
   }
 
   .hero {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / -1;
     min-height: 100svh;
     --media-h: 100%;
   }
@@ -606,9 +774,9 @@ a:hover {
 
   .hero::after {
     background:
-      linear-gradient(to bottom, rgb(10 11 14 / 0.82) 0%, rgb(10 11 14 / 0.35) 20%, rgb(10 11 14 / 0) 34%),
+      linear-gradient(to bottom, rgb(10 11 14 / 0.75) 0%, rgb(10 11 14 / 0.3) 18%, rgb(10 11 14 / 0) 30%),
       linear-gradient(to top, rgb(10 11 14 / 0.97) 0%, rgb(10 11 14 / 0.86) 20%, rgb(10 11 14 / 0.35) 36%, rgb(10 11 14 / 0) 48%),
-      linear-gradient(to left, rgb(10 11 14 / 0.55) 0%, rgb(10 11 14 / 0) 14%);
+      linear-gradient(to left, rgb(10 11 14 / 0.5) 0%, rgb(10 11 14 / 0) 12%);
   }
 
   .hero__inner {
@@ -641,80 +809,46 @@ a:hover {
     display: none;
   }
 
-  .enquiry {
+  .enquiry,
+  .contact {
     grid-column: 2;
-    grid-row: 1 / span 2;
-    padding: var(--pad);
-    border-top: 0;
-    border-left: 1px solid var(--line);
+    width: 100%;
+    background: none;
+    padding-inline: var(--pad);
   }
 
-  .enquiry__head,
-  .form-frame,
-  .form-fallback {
-    max-width: none;
-    margin-inline: 0;
-  }
-
-  .form-fallback {
-    justify-content: flex-start;
-  }
-
-  .contact {
-    grid-column: 1;
+  .enquiry {
     grid-row: 2;
-    padding: 2rem var(--pad);
-  }
-
-  .contact > * {
-    max-width: none;
-  }
-
-  .contact__list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 2rem;
-  }
-
-  .contact__item:nth-child(2) {
-    border-top: 1px solid var(--line);
-  }
-}
-
-/* ---------- Desktop with room: photo panel holds still, contact joins it ---------- */
-
-@media (min-width: 1280px) and (min-height: 640px) {
-  .page {
-    grid-template-rows: auto;
-  }
-
-  .hero {
-    position: sticky;
-    top: 0;
-    align-self: start;
-    height: 100vh;
-    height: 100svh;
-    min-height: 0;
-    container-type: size;
-  }
-
-  /* Keep the car's centre at ~42% of the panel height, between the logo/contact
-     band and the headline. The desktop crop's aspect is 0.794, so the rendered
-     image height is 100cqw / 0.794 ≈ 126cqw and the car's centre is half of that. */
-  .hero__media img {
-    object-position: 50% clamp(min(0px, 100cqh - 125.95cqw), 42cqh - 62.97cqw, 0px);
-  }
-
-  .contact {
-    position: fixed;
-    top: var(--pad);
-    right: calc(var(--form-col) + var(--pad));
-    z-index: 2;
-    width: auto;
-    max-width: calc(100vw - var(--form-col) - 3 * var(--pad) - clamp(150px, 12vw, 230px));
-    padding: 0;
+    padding-block: var(--pad) 0;
     border: 0;
   }
 
+  .contact {
+    grid-row: 3;
+    padding-block: 1.5rem var(--pad);
+    border: 0;
+  }
+
+  .enquiry > *,
+  .contact > * {
+    max-width: 38rem;
+    margin-inline: 0;
+  }
+
+  .enquiry__head {
+    margin-bottom: 1.5rem;
+  }
+
+  textarea.field__input {
+    min-height: 5.5rem;
+  }
+
+  .gform__actions {
+    margin-top: 1.25rem;
+  }
+
+  /* Compact contact block under the form: phone | email, address, socials.
+     The section title and © line stay available to screen readers only. */
   .contact__title,
   .contact__legal {
     position: absolute !important;
@@ -726,72 +860,73 @@ a:hover {
     white-space: nowrap;
   }
 
+  .contact__address {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+  }
+
   .contact__list {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: end;
-    gap: 1.1rem 2.5rem;
-    text-shadow: 0 1px 12px rgb(0 0 0 / 0.6);
+    grid-template-columns: repeat(2, max-content);
+    gap: 0.75rem 2rem;
   }
 
   .contact__item,
-  .contact__item:first-child,
-  .contact__item:nth-child(2) {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 0.6rem;
-    row-gap: 0.2rem;
+  .contact__item:first-child {
+    grid-template-columns: 1.15rem auto;
+    column-gap: 0.65rem;
     padding: 0;
     border: 0;
   }
 
-  .contact__item .icon {
-    grid-row: 1 / span 2;
-    margin-top: 0.05rem;
+  .contact__item--address {
+    grid-column: 1 / -1;
   }
 
-  .contact__label {
-    grid-column: 2;
-    padding: 0;
-    font-size: 0.6875rem;
-    color: var(--gold);
-    letter-spacing: 0.16em;
+  .contact__addr-sep {
+    display: inline;
+  }
+
+  .contact__addr-br {
+    display: none;
   }
 
   .contact__value {
-    grid-column: 2;
     font-size: 0.9375rem;
-    line-height: 1.4;
   }
 
   .contact__note {
-    grid-column: 2;
-    margin: 0;
     font-size: 0.8125rem;
   }
 
-  /* No icon here: indent so "Follow" lines up with the other labels. */
-  .contact__item--social {
-    grid-template-columns: auto;
-    padding-left: calc(1.15rem + 0.6rem);
-  }
-
-  .contact__item--social .contact__label {
-    grid-column: 1;
-  }
-
-  .contact__socials {
-    margin: 0.1rem 0 0;
-    gap: 0.4rem;
+  .contact__item.contact__item--social {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    margin-top: 0.25rem;
   }
 
   .contact__social {
-    min-height: 2.25rem;
-    padding: 0 0.7rem 0 0.55rem;
+    min-height: 2.5rem;
     font-size: 0.8125rem;
-    background: rgb(10 11 14 / 0.35);
-    border-color: rgb(255 255 255 / 0.2);
+  }
+}
+
+/* Tall enough for the photo panel to hold still while the right column scrolls. */
+@media (min-width: 1024px) and (min-height: 560px) {
+  .hero {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
+    container-type: size;
+  }
+
+  /* Keep the car's centre at ~42% of the panel height, between the logo and the
+     headline. The desktop crop's aspect is 0.794, so the rendered image height
+     is 100cqw / 0.794 ≈ 126cqw and the car's centre sits at half of that. */
+  .hero__media img {
+    object-position: 50% clamp(min(0px, 100cqh - 125.95cqw), 42cqh - 62.97cqw, 0px);
   }
 }
 
@@ -809,5 +944,6 @@ a:hover {
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

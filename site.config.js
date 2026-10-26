@@ -24,23 +24,37 @@ export default {
   /**
    * GOOGLE FORM ("Get in Touch")
    *
-   * Paste the form's responder link here. Either of these works:
-   *   https://docs.google.com/forms/d/e/<ID>/viewform
-   *   https://docs.google.com/forms/d/e/<ID>/viewform?embedded=true   (the iframe `src`)
-   * The embed and "open in a new tab" links are both derived from it.
+   * The page shows its own styled form; each field is sent to the matching
+   * question of this Google Form, so responses, the linked Sheet and email
+   * notifications all keep working in Google Forms.
    *
-   * Do NOT use the editor link (…/forms/d/<ID>/edit) or a forms.gle short link.
+   * To switch forms, run `npm run form-fields -- <responder link>` and paste
+   * what it prints over this whole `form: { … }` block (see README.md).
    *
-   * `height` values are the form's rendered height in pixels. They only need
-   * changing if the replacement form has different questions — run
-   * `npm run measure-form` to get new numbers (see README.md).
+   * url    — the form's responder link: https://docs.google.com/forms/d/e/<ID>/viewform
+   *          (not the …/edit link, not a forms.gle short link)
+   * fields — one entry per question, in display order:
+   *          entry        Google's question ID ("entry.<number>")
+   *          label        text shown above the field
+   *          type         'text' | 'email' | 'tel' | 'textarea'
+   *          required     true if the Google question is required
+   *          autocomplete browser autofill hint (name, email, tel, …) — optional
+   *          half         true to share a row with the next half-width field (desktop)
+   *          placeholder  optional hint shown inside an empty field
    */
   form: {
-    url: 'https://docs.google.com/forms/d/e/1FAIpQLSf5uZ27z2AGOZRJ_pwo73I2V9BZLcmPHyRjS1lFLXRDelb51g/viewform?embedded=true',
-    height: {
-      desktop: 819, // iframe ≥ 640px wide (matches Google's own embed code)
-      mobile: 900,  // narrow screens, where text wraps more
-    },
+    url: 'https://docs.google.com/forms/d/e/1FAIpQLSf5uZ27z2AGOZRJ_pwo73I2V9BZLcmPHyRjS1lFLXRDelb51g/viewform',
+    fields: [
+      { entry: 'entry.205625071', label: 'Name', type: 'text', required: true, autocomplete: 'name' },
+      { entry: 'entry.677626947', label: 'Email', type: 'email', required: true, autocomplete: 'email', half: true },
+      { entry: 'entry.895985407', label: 'Phone', type: 'tel', autocomplete: 'tel', half: true },
+      {
+        entry: 'entry.160600044',
+        label: 'How can we help?',
+        type: 'textarea',
+        placeholder: 'Your vehicle, the service you’re interested in, a good time to call…',
+      },
+    ],
   },
 
   contact: {
@@ -77,13 +91,16 @@ export default {
   copy: {
     headline: 'Website Coming Soon',
     intro:
-      'A new Premier Werkz website is on its way. In the meantime, we’re just a call or message away — leave your details and we’ll get back to you.',
+      'A new Premier Werkz website is on its way. In the meantime, we’re just a call or message away. Leave your details and we’ll get back to you.',
     formHeading: 'Get in Touch',
     formIntro: 'Tell us about your vehicle and what you have in mind. We’ll reply by phone or email.',
+    formSubmit: 'Send message',
+    formSuccessHeading: 'Message sent',
+    formSuccess: 'Thanks, we’ve received your message and will be in touch soon.',
   },
 
   seo: {
-    title: 'Premier Werkz Auto Salon | Modesto, CA — Website Coming Soon',
+    title: 'Premier Werkz Auto Salon | Modesto, CA | Website Coming Soon',
     description:
       'Premier Werkz Auto Salon in Modesto, California: detailing, paint correction, ceramic coating, paint protection film, window tint and vinyl wraps. Get in touch today.',
     /**

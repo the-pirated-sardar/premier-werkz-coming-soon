@@ -16,7 +16,10 @@ const ICONS = {
   instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/>',
   facebook: '<path d="M15 8h-2a1.5 1.5 0 0 0-1.5 1.5V21M9 13h6"/><rect x="3" y="3" width="18" height="18" rx="5"/>',
   arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   external: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  check: '<circle cx="12" cy="12" r="9.5"/><path d="m7.5 12.5 3 3 6-6.5"/>',
+  alert: '<circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
 };
 const icon = (name, cls = 'icon') =>
   `<svg class="${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
@@ -52,40 +55,111 @@ function logoPicture({ images, alt }) {
         </picture>`;
 }
 
+// ── Contact form ─────────────────────────────────────────────────────────────
+
+const INPUT_TYPES = { text: 'text', email: 'email', tel: 'tel' };
+
+function formField(field, index) {
+  const id = `gf-${index}`;
+  const label = esc(field.label);
+  const lower = field.label.replace(/[?:.!]+$/, '').toLowerCase();
+  const attrs = [
+    `class="field__input"`,
+    `id="${id}"`,
+    `name="${esc(field.entry)}"`,
+    `data-field`,
+    field.required ? 'required' : '',
+    field.autocomplete ? `autocomplete="${esc(field.autocomplete)}"` : '',
+    field.placeholder ? `placeholder="${esc(field.placeholder)}"` : '',
+    `data-msg-required="${esc(field.type === 'email' ? 'Please enter your email address.' : `Please enter your ${lower}.`)}"`,
+    field.type === 'email' ? `data-msg-invalid="Please enter a valid email address, like name@example.com."` : '',
+    field.type === 'tel' ? `data-msg-invalid="Please enter a valid phone number."` : '',
+    `aria-describedby="${id}-error"`,
+  ].filter(Boolean);
+
+  let control;
+  if (field.type === 'textarea') {
+    control = `<textarea ${attrs.join(' ')} rows="4"></textarea>`;
+  } else {
+    if (field.type === 'email') attrs.push('pattern="[^@\\s]+@[^@\\s]+\\.[^@\\s]+"', 'inputmode="email"', 'spellcheck="false"', 'autocapitalize="off"');
+    if (field.type === 'tel') attrs.push('pattern="[0-9()+.\\- ]{7,}"', 'inputmode="tel"');
+    control = `<input type="${INPUT_TYPES[field.type]}" ${attrs.join(' ')}>`;
+  }
+  const optional = field.required ? '' : ' <span class="field__optional">Optional</span>';
+  return `<div class="field${field.half ? ' field--half' : ''}">
+            <label class="field__label" for="${id}">${label}${optional}</label>
+            ${control}
+            <p class="field__error" id="${id}-error" hidden></p>
+          </div>`;
+}
+
+function contactForm(site) {
+  const { form, config, links } = site;
+  const { copy } = config;
+  const phone = config.contact.phone ? `call <a href="${esc(links.tel)}">${esc(config.contact.phone)}</a>, or ` : '';
+  return `<form class="gform" action="${esc(form.submitUrl)}" method="POST" data-gform>
+        <div class="gform__grid">
+          ${form.fields.map(formField).join('\n          ')}
+          <div class="gform__trap" aria-hidden="true">
+            <label for="gf-website">Leave this field empty</label>
+            <input id="gf-website" type="text" tabindex="-1" autocomplete="off" data-gform-trap>
+          </div>
+        </div>
+        <div class="gform__error" data-gform-error hidden>
+          ${icon('alert')}
+          <p>Sorry, your message didn’t send. Please try again, ${phone}<a href="${esc(form.viewUrl)}" target="_blank" rel="noopener">use our Google Form${NEW_TAB}</a>.</p>
+        </div>
+        <div class="gform__actions">
+          <button class="button button--primary gform__submit" type="submit" data-gform-submit>
+            <span>${esc(copy.formSubmit)}</span>${icon('arrowRight')}
+          </button>
+          <p class="gform__alt">Having trouble? <a href="${esc(form.viewUrl)}" target="_blank" rel="noopener">Use our Google Form${icon('external', 'icon icon--inline')}${NEW_TAB}</a></p>
+        </div>
+      </form>
+      <div class="gform-success" data-gform-success tabindex="-1" hidden>
+        ${icon('check', 'icon gform-success__icon')}
+        <h3 class="gform-success__title">${esc(copy.formSuccessHeading)}</h3>
+        <p>${esc(copy.formSuccess)}</p>
+        <button class="button button--ghost" type="button" data-gform-again>Send another message</button>
+      </div>
+      <p class="visually-hidden" role="status" data-gform-status></p>`;
+}
+
+// ── Contact details ──────────────────────────────────────────────────────────
+
 function contactItems(site) {
   const { contact, social, links } = site;
   const items = [];
   if (contact.phone) {
     items.push(`<li class="contact__item">
           ${icon('phone')}
-          <span class="contact__label">Call</span>
           <a class="contact__value" href="${esc(links.tel)}">${esc(contact.phone)}</a>
         </li>`);
   }
   if (contact.email) {
     items.push(`<li class="contact__item">
           ${icon('email')}
-          <span class="contact__label">Email</span>
           <a class="contact__value" href="mailto:${esc(contact.email)}">${esc(contact.email)}</a>
         </li>`);
   }
   if (site.addressLines.length) {
     const note = contact.availability ? `<span class="contact__note">${esc(contact.availability)}</span>` : '';
-    items.push(`<li class="contact__item">
+    // Two lines on phones, one line ("…, Suite F, Modesto…") in the desktop contact block.
+    const address = site.addressLines.map(esc).join('<span class="contact__addr-sep">, </span><br class="contact__addr-br">');
+    items.push(`<li class="contact__item contact__item--address">
           ${icon('location')}
-          <span class="contact__label">Visit</span>
-          <a class="contact__value" href="${esc(links.maps)}" target="_blank" rel="noopener">${site.addressLines.map(esc).join('<br>')}${NEW_TAB}</a>
+          <a class="contact__value" href="${esc(links.maps)}" target="_blank" rel="noopener">${address}${NEW_TAB}</a>
           ${note}
         </li>`);
   }
   if (social.length) {
     const socialLinks = social
-      .map(
-        (s) => `<a class="contact__social" href="${esc(s.url)}" target="_blank" rel="noopener" aria-label="${esc(`${s.network}: ${s.handle}`)} (opens in a new tab)">${icon(s.network.toLowerCase() in ICONS ? s.network.toLowerCase() : 'external', 'icon icon--social')}<span>${esc(s.network)}</span></a>`,
-      )
+      .map((s) => {
+        const name = s.network.toLowerCase() in ICONS ? s.network.toLowerCase() : 'external';
+        return `<a class="contact__social" href="${esc(s.url)}" target="_blank" rel="noopener" aria-label="${esc(`${s.network}: ${s.handle}`)} (opens in a new tab)">${icon(name, 'icon icon--social')}<span>${esc(s.network)}</span></a>`;
+      })
       .join('');
     items.push(`<li class="contact__item contact__item--social">
-          <span class="contact__label">Follow</span>
           <span class="contact__socials">${socialLinks}</span>
         </li>`);
   }
@@ -93,7 +167,7 @@ function contactItems(site) {
 }
 
 export function render(site) {
-  const { config, form, images, page } = site;
+  const { config, images, page } = site;
   const { copy, business, seo } = config;
   const year = new Date().getFullYear();
 
@@ -118,7 +192,7 @@ export function render(site) {
   <meta name="format-detection" content="telephone=no">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${esc(business.name)}">
-  <meta property="og:title" content="${esc(`${business.name} — ${copy.headline}`)}">
+  <meta property="og:title" content="${esc(`${business.name}: ${copy.headline}`)}">
   <meta property="og:description" content="${esc(seo.description)}">
   <meta property="og:url" content="${esc(site.siteUrl)}">
   <meta property="og:image" content="${esc(site.siteUrl + images.og.file)}">
@@ -130,7 +204,6 @@ export function render(site) {
   <link rel="icon" href="favicon-48.png" type="image/png" sizes="48x48">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preload" href="fonts/archivo-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preconnect" href="https://docs.google.com">
   <style>${site.css}</style>
   <script type="application/ld+json">${site.jsonLd}</script>
 </head>
@@ -142,8 +215,8 @@ export function render(site) {
       <div class="hero__inner">
         ${logoPicture({ images, alt: business.name })}
         <div class="hero__copy">
-          <p class="eyebrow">${esc(business.locality)}</p>
           <h1 class="hero__title" id="hero-title">${site.headlineHtml}</h1>
+          <p class="hero__locality">${esc(business.locality)}</p>
           <p class="hero__intro">${esc(copy.intro)}</p>
           ${services}
           <div class="hero__actions">
@@ -159,14 +232,7 @@ export function render(site) {
         <h2 class="section-title" id="enquiry-title">${esc(copy.formHeading)}</h2>
         <p class="enquiry__intro">${esc(copy.formIntro)}</p>
       </div>
-      <div class="form-frame" style="--form-h-wide: ${form.height.desktop}px; --form-h-narrow: ${form.height.mobile}px">
-        <p class="form-frame__loading" aria-hidden="true">Loading form…</p>
-        <iframe class="form-frame__iframe" src="${esc(form.embedUrl)}" title="${esc(`${copy.formHeading} — ${business.name} contact form`)}" loading="lazy"></iframe>
-      </div>
-      <p class="form-fallback">
-        Form not loading?
-        <a href="${esc(form.publicUrl)}" target="_blank" rel="noopener">Open it in a new tab${icon('external', 'icon icon--inline')}${NEW_TAB}</a>
-      </p>
+      ${contactForm(site)}
     </section>
 
     <section class="contact" aria-labelledby="contact-title">
@@ -179,6 +245,7 @@ export function render(site) {
       <p class="contact__legal">© ${year} ${esc(business.name)}</p>
     </section>
   </main>
+  <script>${site.js}</script>
 </body>
 </html>
 `;

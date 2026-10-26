@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import config from '../site.config.js';
 import { render } from '../src/template.mjs';
+import { formUrls } from './google-form.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -21,34 +22,27 @@ const images = JSON.parse(readFileSync(join(ROOT, 'src/images.json'), 'utf8'));
 const errors = [];
 const fail = (msg) => errors.push(msg);
 
-/** Accepts …/forms/d/e/<id>/viewform (with or without ?embedded=true). */
-function normalizeFormUrl(raw) {
-  let url;
-  try {
-    url = new URL(String(raw).trim());
-  } catch {
-    return fail(`form.url is not a valid URL: "${raw}"`);
-  }
-  if (url.hostname === 'forms.gle') {
-    return fail('form.url is a forms.gle short link. Open it in a browser and paste the full docs.google.com/forms/d/e/…/viewform address instead.');
-  }
-  const match = url.hostname === 'docs.google.com' && url.pathname.match(/^\/forms(?:\/u\/\d+)?\/d\/e\/([\w-]+)\/viewform\/?$/);
-  if (!match) {
-    if (/\/forms\/d\/[\w-]+\/edit/.test(url.pathname)) {
-      return fail('form.url is the form EDITOR link. In Google Forms use Publish → Copy responder link (…/forms/d/e/…/viewform).');
-    }
-    return fail(`form.url must look like https://docs.google.com/forms/d/e/<ID>/viewform — got "${raw}"`);
-  }
-  const base = `https://docs.google.com/forms/d/e/${match[1]}/viewform`;
-  return { embedUrl: `${base}?embedded=true`, publicUrl: base };
+const rawFormUrl = String(config.form?.url ?? '');
+const urls = formUrls(rawFormUrl);
+if (!urls) {
+  if (/forms\.gle/.test(rawFormUrl)) fail('form.url is a forms.gle short link. Open it in a browser and paste the full docs.google.com/forms/d/e/…/viewform address instead.');
+  else if (/\/forms\/d\/[\w-]+\/edit/.test(rawFormUrl)) fail('form.url is the form EDITOR link. In Google Forms use Published → Copy responder link (…/forms/d/e/…/viewform).');
+  else fail(`form.url must look like https://docs.google.com/forms/d/e/<ID>/viewform — got "${rawFormUrl}"`);
 }
 
-const form = normalizeFormUrl(config.form?.url) ?? {};
-for (const key of ['desktop', 'mobile']) {
-  const h = config.form?.height?.[key];
-  if (!Number.isInteger(h) || h < 300 || h > 3000) fail(`form.height.${key} must be a whole number of pixels between 300 and 3000 (got ${h}).`);
-}
-form.height = config.form?.height;
+const FIELD_TYPES = ['text', 'email', 'tel', 'textarea'];
+const formFields = Array.isArray(config.form?.fields) ? config.form.fields : [];
+if (!formFields.length) fail('form.fields is empty — run `npm run form-fields` and paste its output into site.config.js.');
+const seenEntries = new Set();
+formFields.forEach((f, i) => {
+  const where = `form.fields[${i}]${f?.label ? ` ("${f.label}")` : ''}`;
+  if (!/^entry\.\d+$/.test(f?.entry ?? '')) fail(`${where}: entry must look like 'entry.123456789' (got ${JSON.stringify(f?.entry)}).`);
+  if (seenEntries.has(f?.entry)) fail(`${where}: entry ${f.entry} is used twice.`);
+  seenEntries.add(f?.entry);
+  if (!f?.label) fail(`${where}: label is empty.`);
+  if (!FIELD_TYPES.includes(f?.type)) fail(`${where}: type must be one of ${FIELD_TYPES.join(', ')} (got ${JSON.stringify(f?.type)}).`);
+});
+const form = { ...urls, fields: formFields };
 
 const { contact = {}, social = [], services = [], copy = {}, seo = {}, business = {} } = config;
 
@@ -64,7 +58,9 @@ for (const s of social) {
   if (!s.network || !s.url || !/^https:\/\//.test(s.url)) fail(`Each social entry needs a network name and an https:// url (problem: ${JSON.stringify(s)}).`);
 }
 if (!Array.isArray(services)) fail('services must be a list, e.g. [\'Detailing\', \'Window Tint\'] (or [] to hide).');
-for (const key of ['headline', 'intro', 'formHeading', 'formIntro']) if (!copy[key]) fail(`copy.${key} is empty.`);
+for (const key of ['headline', 'intro', 'formHeading', 'formIntro', 'formSubmit', 'formSuccessHeading', 'formSuccess']) {
+  if (!copy[key]) fail(`copy.${key} is empty.`);
+}
 for (const key of ['title', 'description']) if (!seo[key]) fail(`seo.${key} is empty.`);
 if (!business.name) fail('business.name is empty.');
 
@@ -139,6 +135,12 @@ const site = {
   contact,
   social,
   css: minifyCss(readFileSync(join(ROOT, 'src/styles.css'), 'utf8')),
+  // Small enough to inline; strip comment lines only (keeps it readable in view-source).
+  js: readFileSync(join(ROOT, 'src/form.js'), 'utf8')
+    .split('\n')
+    .filter((line) => !/^\s*(\/\/|\/\*\*?|\*)/.test(line))
+    .join('\n')
+    .trim(),
 };
 
 // ── Write dist/ ──────────────────────────────────────────────────────────────
