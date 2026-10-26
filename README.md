@@ -69,17 +69,11 @@ If something in the file is invalid (say, a phone number with a missing digit or
 
 **Locally:** edit the file, run `npm run dev` to preview at http://localhost:4173/, then commit and push.
 
-### Redirecting old addresses
+### Old addresses and typos go to the homepage
 
-Paths listed under `redirects` in `site.config.js` send visitors straight to the homepage. Currently:
+Every address that isn't a real file on the site forwards to the homepage: old premierwerkz.com pages such as `/work-request` or `/services/ceramic-coating`, deep links, and typos. There's nothing to configure.
 
-```js
-redirects: ['/work-request'],
-```
-
-so `https://www.premierwerkz.com/work-request` (from the old website) lands on the homepage once the domain is connected. Add more old paths to the list the same way, for example `'/contact-us'`. Any other unknown address shows this page as a "not found" page.
-
-GitHub Pages can't send server-side redirects, so the build writes a tiny page for each path that forwards instantly (a 0-second meta refresh, which Google treats as a permanent redirect, plus a JavaScript fallback). On the custom domain, GitHub first sends `www.premierwerkz.com/…` to `premierwerkz.com/…` (keeping the path), then this page forwards to the homepage.
+How: GitHub Pages serves `404.html` for any unknown address, and the build makes that page forward instantly to the homepage (JavaScript, with a meta-refresh fallback for browsers without it). On the custom domain, GitHub first sends `www.premierwerkz.com/…` to `premierwerkz.com/…`, then the forward happens. Search engines see the old addresses as "not found" and drop them over time, which is fine for a temporary site.
 
 ---
 
