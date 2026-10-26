@@ -1,0 +1,24 @@
+{
+  "name": "premier-werkz-coming-soon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Temporary 'Website Coming Soon' page for Premier Werkz Auto Salon, Modesto CA",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "images": "node scripts/images.mjs",
+    "measure-form": "node scripts/measure-form.mjs",
+    "test": "playwright test",
+    "screenshots": "node scripts/build.mjs && node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "sharp": "0.35.5"
+  }
+}
