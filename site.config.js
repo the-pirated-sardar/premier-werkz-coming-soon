@@ -78,13 +78,6 @@ export default {
     { network: 'Facebook', handle: 'PremierWerkz', url: 'https://www.facebook.com/PremierWerkz' },
   ],
 
-  /**
-   * Old addresses (e.g. pages of the previous premierwerkz.com website) that
-   * should send visitors straight to this homepage. Paths only, starting with "/".
-   * Anything not listed here shows this page as a "not found" (404) page instead.
-   */
-  redirects: ['/work-request'],
-
   // One discreet line under the intro. [] to hide.
   services: [
     'Detailing',

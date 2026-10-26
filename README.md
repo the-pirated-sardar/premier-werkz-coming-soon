@@ -48,7 +48,7 @@ assets-source/            original photos and logos (git-ignored, kept on your M
 
 **Layout.** On desktop the photo panel (logo, car, headline) sits on the left and the form plus contact details sit on the right, so everything fits on one screen at 1366×768 and up. On phones the sections stack in order: hero, form, contact.
 
-**Paths.** All asset URLs are relative, so the same build works at `…github.io/premier-werkz-coming-soon/` and at the root of a custom domain. Unknown URLs (for example old `premierwerkz.com/services/…` links) show this page via `404.html`.
+**Paths.** All asset URLs are relative, so the same build works at `…github.io/premier-werkz-coming-soon/` and at the root of a custom domain. Unknown URLs (for example old `premierwerkz.com/work-request` links) forward to the homepage via `404.html`.
 
 **Search engines.** The preview address (`*.github.io`) is always marked `noindex`. On a custom domain the page is indexable and gets a `sitemap.xml`, controlled by `seo.allowIndexing` in `site.config.js`.
 
@@ -175,7 +175,7 @@ npm run images         # regenerate optimized images (needs assets-source/)
 
 `npm test` builds and serves the site under `/premier-werkz-coming-soon/`, exactly how GitHub Pages serves the preview. It never sends real form responses (requests to Google are intercepted). It checks:
 
-- no errors or broken images; the 404 page; no em or en dashes in the copy
+- no errors or broken images; unknown addresses forward to the homepage; no em or en dashes in the copy
 - every contact link against `site.config.js`
 - the form: wiring to the Google Form, required-field and email validation, the exact data sent to Google, the success and failure states, the spam trap, working without JavaScript, and that `site.config.js` matches the live Google Form
 - no horizontal scrolling at 11 screen sizes; logo, headline, form and contact details all fit on screen at 1280 to 1920px desktops; 44px touch targets on phones

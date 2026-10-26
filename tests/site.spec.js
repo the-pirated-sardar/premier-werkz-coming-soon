@@ -25,19 +25,14 @@ const ALL_VIEWPORTS = [
   { width: 844, height: 390 },
 ];
 
-/**
- * Collects same-origin failures and page errors while a test runs.
- * `expectedStatusUrl`: a document deliberately served with an error status (the 404 page),
- * whose own "Failed to load resource" console message is expected.
- */
-function watchForErrors(page, { expectedStatusUrl } = {}) {
+/** Collects same-origin failures and page errors while a test runs. */
+function watchForErrors(page) {
   const problems = [];
   const origin = new URL(process.env.BASE_URL || 'http://localhost').origin;
   const sameOrigin = (url) => url.startsWith(origin);
   page.on('pageerror', (err) => problems.push(`pageerror: ${err.message}`));
   page.on('console', (msg) => {
     const url = msg.location().url || origin;
-    if (expectedStatusUrl && url.endsWith(expectedStatusUrl) && msg.text().startsWith('Failed to load resource')) return;
     if (msg.type() === 'error' && sameOrigin(url)) problems.push(`console: ${msg.text()}`);
   });
   page.on('requestfailed', (req) => {
@@ -97,37 +92,33 @@ test.describe('page basics', () => {
     expect(text.match(/[—–]/g) ?? []).toEqual([]);
   });
 
-  test('unknown paths (old site links) show the page with working assets', async ({ page }) => {
-    const problems = watchForErrors(page, { expectedStatusUrl: '/services/ceramic-coating' });
-    const res = await page.goto('./services/ceramic-coating', { waitUntil: 'load' });
-    expect(res.status()).toBe(404);
-    await expect(page.locator('h1')).toBeVisible();
-    const broken = await page.$$eval('img', (imgs) => imgs.filter((i) => i.naturalWidth === 0).length);
-    expect(broken).toBe(0);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-    expect(problems).toEqual([]);
-  });
 });
 
-test.describe('redirects from old addresses', () => {
-  for (const from of config.redirects ?? []) {
-    for (const variant of [from, `${from}/`]) {
-      test(`${variant} sends visitors to the homepage`, async ({ page, baseURL }) => {
-        await page.goto(`.${variant}`);
-        await page.waitForURL(baseURL);
-        await expect(page.locator('h1')).toBeVisible();
-      });
-    }
-
-    test.describe('without JavaScript', () => {
-      test.use({ javaScriptEnabled: false });
-      test(`${from} still redirects (meta refresh)`, async ({ page, baseURL }) => {
-        await page.goto(`.${from}`);
-        await page.waitForURL(baseURL);
-        await expect(page.locator('h1')).toBeVisible();
-      });
+test.describe('every unknown address forwards to the homepage', () => {
+  // Old premierwerkz.com pages, trailing slashes, deep paths, query strings and hashes.
+  const paths = ['/work-request', '/work-request/', '/services/ceramic-coating', '/contact-us?utm_source=google#top', '/a/b/c/page.html'];
+  for (const path of paths) {
+    test(path, async ({ page, baseURL }) => {
+      await page.goto(`.${path}`);
+      await page.waitForURL(baseURL);
+      await expect(page.locator('h1')).toBeVisible();
     });
   }
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('/work-request still forwards (meta refresh)', async ({ page, baseURL }) => {
+      await page.goto('./work-request');
+      await page.waitForURL(baseURL);
+      await expect(page.locator('h1')).toBeVisible();
+    });
+  });
+
+  test('real files are still served as themselves', async ({ request }) => {
+    for (const file of ['images/og-image.jpg', 'fonts/archivo-latin-var.woff2', 'favicon.ico', 'robots.txt']) {
+      expect((await request.get(file)).status(), file).toBe(200);
+    }
+  });
 });
 
 test.describe('contact details', () => {

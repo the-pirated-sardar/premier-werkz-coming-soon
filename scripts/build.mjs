@@ -58,19 +58,6 @@ for (const s of social) {
   if (!s.network || !s.url || !/^https:\/\//.test(s.url)) fail(`Each social entry needs a network name and an https:// url (problem: ${JSON.stringify(s)}).`);
 }
 if (!Array.isArray(services)) fail('services must be a list, e.g. [\'Detailing\', \'Window Tint\'] (or [] to hide).');
-
-const RESERVED = new Set(['images', 'fonts', 'index.html', '404.html', 'robots.txt', 'sitemap.xml']);
-const redirects = Array.isArray(config.redirects) ? config.redirects : [];
-if (!Array.isArray(config.redirects ?? [])) fail("redirects must be a list of paths, e.g. ['/work-request'] (or [] for none).");
-const redirectPaths = redirects.map((raw) => {
-  const path = String(raw).trim().replace(/^\/+|\/+$/g, '');
-  if (!String(raw).startsWith('/') || !path || !/^[\w.~-]+(\/[\w.~-]+)*$/.test(path) || path.split('/').includes('..')) {
-    fail(`redirects: "${raw}" must be a path like '/work-request' (letters, numbers, - _ . ~ and /).`);
-  } else if (RESERVED.has(path.split('/')[0])) {
-    fail(`redirects: "${raw}" would replace a file the site needs.`);
-  }
-  return path;
-});
 for (const key of ['headline', 'intro', 'formHeading', 'formIntro', 'formSubmit', 'formSuccessHeading', 'formSuccess']) {
   if (!copy[key]) fail(`copy.${key} is empty.`);
 }
@@ -163,37 +150,29 @@ cpSync(join(ROOT, 'public'), DIST, { recursive: true });
 
 writeFileSync(join(DIST, 'index.html'), render({ ...site, page: { title: seo.title, indexable } }));
 
-// 404s (e.g. old premierwerkz.com/services/… links) show the same page. <base> makes
-// relative asset paths resolve from the site root at any URL depth.
+// GitHub Pages serves 404.html for every address that isn't a real file, so this page
+// sends all of them (old premierwerkz.com links like /work-request, typos, deep links)
+// straight to the homepage. The script skips the redirect when already on the homepage
+// URL, so a broken deploy can't reload forever; <noscript> covers JavaScript-off browsers.
+const home = JSON.stringify(siteUrl.href);
 writeFileSync(
   join(DIST, '404.html'),
-  render({ ...site, page: { title: seo.title, indexable: false, baseHref: siteUrl.pathname } }),
-);
-
-// GitHub Pages can't send server-side redirects, so each old path gets a tiny page that
-// forwards instantly. Google treats an instant meta refresh as a permanent redirect.
-// Written as both <path>.html and <path>/index.html so /path and /path/ both work.
-const redirectPage = (home) => `<!doctype html>
+  `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <title>${escHtml(business.name)}</title>
   <meta name="robots" content="noindex">
-  <link rel="canonical" href="${home}">
-  <meta http-equiv="refresh" content="0; url=${home}">
-  <script>location.replace(${JSON.stringify(home)});</script>
+  <script>if (location.href.split(/[?#]/)[0] !== ${home}) location.replace(${home});</script>
+  <noscript><meta http-equiv="refresh" content="0; url=${siteUrl.href}"></noscript>
   <style>body{margin:0;padding:2rem;background:#0a0b0e;color:#f4f2ee;font:1rem/1.6 system-ui,sans-serif}a{color:#f2b530}</style>
 </head>
 <body>
-  <p>This page has moved. <a href="${home}">Continue to ${escHtml(business.name)}</a>.</p>
+  <p><a href="${siteUrl.href}">Continue to ${escHtml(business.name)}</a></p>
 </body>
 </html>
-`;
-for (const path of redirectPaths) {
-  mkdirSync(join(DIST, path), { recursive: true });
-  writeFileSync(join(DIST, path, 'index.html'), redirectPage(siteUrl.href));
-  writeFileSync(join(DIST, `${path}.html`), redirectPage(siteUrl.href));
-}
+`,
+);
 
 writeFileSync(
   join(DIST, 'robots.txt'),
@@ -208,4 +187,3 @@ if (indexable) {
 
 if (!existsSync(join(DIST, 'index.html'))) throw new Error('Build produced no index.html');
 console.log(`✔ Built dist/ for ${siteUrl.href} (${indexable ? 'indexable' : 'noindex — preview/local'})`);
-if (redirectPaths.length) console.log(`  Redirects to the homepage: ${redirectPaths.map((p) => `/${p}`).join(', ')}`);

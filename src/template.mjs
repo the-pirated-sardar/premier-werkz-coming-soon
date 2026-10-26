@@ -183,7 +183,7 @@ export function render(site) {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">${page.baseHref ? `\n  <base href="${esc(page.baseHref)}">` : ''}
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${esc(page.title)}</title>
   <meta name="description" content="${esc(seo.description)}">${page.indexable ? '' : '\n  <meta name="robots" content="noindex, nofollow">'}
   <link rel="canonical" href="${esc(site.siteUrl)}">
