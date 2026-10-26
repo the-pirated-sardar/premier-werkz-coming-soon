@@ -69,6 +69,18 @@ If something in the file is invalid (say, a phone number with a missing digit or
 
 **Locally:** edit the file, run `npm run dev` to preview at http://localhost:4173/, then commit and push.
 
+### Redirecting old addresses
+
+Paths listed under `redirects` in `site.config.js` send visitors straight to the homepage. Currently:
+
+```js
+redirects: ['/work-request'],
+```
+
+so `https://www.premierwerkz.com/work-request` (from the old website) lands on the homepage once the domain is connected. Add more old paths to the list the same way, for example `'/contact-us'`. Any other unknown address shows this page as a "not found" page.
+
+GitHub Pages can't send server-side redirects, so the build writes a tiny page for each path that forwards instantly (a 0-second meta refresh, which Google treats as a permanent redirect, plus a JavaScript fallback). On the custom domain, GitHub first sends `www.premierwerkz.com/…` to `premierwerkz.com/…` (keeping the path), then this page forwards to the homepage.
+
 ---
 
 ## The contact form and Google Forms
@@ -215,7 +227,7 @@ There are no MX (email) or TXT records, so nothing else is affected by the chang
 3. **In this repository → Settings → Pages → Custom domain**, enter `premierwerkz.com` and **Save**. (With GitHub Actions deployments no `CNAME` file is needed in the repo.)
 4. Wait for the DNS check to pass (minutes to a few hours), then tick **Enforce HTTPS** once it's offered.
 5. Re-run the deploy (Actions → *Deploy to GitHub Pages* → **Run workflow**) so canonical URLs, the sitemap and indexing switch to `https://premierwerkz.com/`.
-6. Check `https://premierwerkz.com`, `https://www.premierwerkz.com` (should redirect) and send a test message through the form.
+6. Check `https://premierwerkz.com`, `https://www.premierwerkz.com` (should redirect), `https://www.premierwerkz.com/work-request` (should land on the homepage), and send a test message through the form.
 
 GitHub's reference: [Managing a custom domain for your GitHub Pages site](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
 

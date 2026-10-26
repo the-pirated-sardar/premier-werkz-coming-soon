@@ -109,6 +109,27 @@ test.describe('page basics', () => {
   });
 });
 
+test.describe('redirects from old addresses', () => {
+  for (const from of config.redirects ?? []) {
+    for (const variant of [from, `${from}/`]) {
+      test(`${variant} sends visitors to the homepage`, async ({ page, baseURL }) => {
+        await page.goto(`.${variant}`);
+        await page.waitForURL(baseURL);
+        await expect(page.locator('h1')).toBeVisible();
+      });
+    }
+
+    test.describe('without JavaScript', () => {
+      test.use({ javaScriptEnabled: false });
+      test(`${from} still redirects (meta refresh)`, async ({ page, baseURL }) => {
+        await page.goto(`.${from}`);
+        await page.waitForURL(baseURL);
+        await expect(page.locator('h1')).toBeVisible();
+      });
+    });
+  }
+});
+
 test.describe('contact details', () => {
   test('contact links match site.config.js', async ({ page }) => {
     await page.goto('./');
